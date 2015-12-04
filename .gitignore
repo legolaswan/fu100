@@ -1,5 +1,4 @@
-runtime/
+#runtime/
 .idea/
 Debug.win32/
-.idea/
-.settings/
+#.settings/
