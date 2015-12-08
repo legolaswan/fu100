@@ -25,6 +25,9 @@
 #include "platform/ios/JavaScriptObjCBridge.h"
 #endif
 
+#include "Runtime.h"
+#include "ConfigParser.h"
+
 USING_NS_CC;
 using namespace CocosDenshion;
 
@@ -39,13 +42,30 @@ AppDelegate::~AppDelegate()
 
 bool AppDelegate::applicationDidFinishLaunching()
 {
+    
+#if (COCOS2D_DEBUG>0)
+    initRuntime();
+#endif
+    
+    if (!ConfigParser::getInstance()->isInit()) {
+            ConfigParser::getInstance()->readConfig();
+        }
+
     // initialize director
     auto director = Director::getInstance();
-	auto glview = director->getOpenGLView();
-	if(!glview) {
-		glview = GLView::createWithRect("fu100", Rect(0,0,900,640));
-		director->setOpenGLView(glview);
-	}
+    auto glview = director->getOpenGLView();    
+    if(!glview) {
+        Size viewSize = ConfigParser::getInstance()->getInitViewSize();
+        string title = ConfigParser::getInstance()->getInitViewName();
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32 || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+        extern void createSimulator(const char* viewName, float width, float height,bool isLandscape = true, float frameZoomFactor = 1.0f);
+        bool isLanscape = ConfigParser::getInstance()->isLanscape();
+        createSimulator(title.c_str(),viewSize.width,viewSize.height,isLanscape);
+#else
+        glview = GLView::createWithRect(title.c_str(), Rect(0,0,viewSize.width,viewSize.height));
+        director->setOpenGLView(glview);
+#endif
+    }
 
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0 / 60);
@@ -62,10 +82,10 @@ bool AppDelegate::applicationDidFinishLaunching()
     sc->addRegisterCallback(register_all_cocos2dx_builder);
     sc->addRegisterCallback(register_CCBuilderReader);
     
-	sc->addRegisterCallback(register_all_cocos2dx_ui);
-	sc->addRegisterCallback(register_all_cocos2dx_ui_manual);
-	sc->addRegisterCallback(register_all_cocos2dx_studio);
-	sc->addRegisterCallback(register_all_cocos2dx_studio_manual);
+    sc->addRegisterCallback(register_all_cocos2dx_ui);
+    sc->addRegisterCallback(register_all_cocos2dx_ui_manual);
+    sc->addRegisterCallback(register_all_cocos2dx_studio);
+    sc->addRegisterCallback(register_all_cocos2dx_studio_manual);
     
     sc->addRegisterCallback(register_all_cocos2dx_spine);
     sc->addRegisterCallback(register_all_cocos2dx_spine_manual);
@@ -76,15 +96,21 @@ bool AppDelegate::applicationDidFinishLaunching()
     
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
     sc->addRegisterCallback(JavascriptJavaBridge::_js_register);
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS|| CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
     sc->addRegisterCallback(JavaScriptObjCBridge::_js_register);
 #endif
-    sc->start();    
-    sc->runScript("script/jsb_boot.js");
-    ScriptEngineProtocol *engine = ScriptingCore::getInstance();
-	ScriptEngineManager::getInstance()->setScriptEngine(engine);
-	ScriptingCore::getInstance()->runScript("main.js");
+    
+#if (COCOS2D_DEBUG>0)
+    if (startRuntime())
+        return true;
+#endif
 
+    sc->start();
+    sc->runScript("script/jsb_boot.js");
+    auto engine = ScriptingCore::getInstance();
+    ScriptEngineManager::getInstance()->setScriptEngine(engine);
+    ScriptingCore::getInstance()->runScript(ConfigParser::getInstance()->getEntryFile().c_str());
+    
     return true;
 }
 

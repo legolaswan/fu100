@@ -1,8 +1,8 @@
 {
   "init_cfg": {
-    "isLandscape": true,
+    "isLandscape": false,
     "isWindowTop": false,
-    "name": "CocosJSGame",
+    "name": "fu100",
     "width": 960,
     "height": 640,
     "entry": "main.js",
