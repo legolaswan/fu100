@@ -12,6 +12,7 @@
     "jsList":[
         "src/resource.js",
         "src/main/layer/MainMenuLayer.js",
+        "src/main/layer/MainActivityLayer.js",
         "src/main/MainScene.js",
         "src/app.js"
     ]

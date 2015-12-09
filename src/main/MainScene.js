@@ -7,5 +7,8 @@ var MainScene = cc.Scene.extend({
 		this._super();
 		var menuLayer = new MainMenuLayer();
 		this.addChild(menuLayer, 0, 1);
+		
+		var actLayer = new MainActivityLayer();
+		this.addChild(actLayer);
 	}
 });

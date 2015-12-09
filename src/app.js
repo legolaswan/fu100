@@ -16,6 +16,7 @@ var HelloWorldLayer = cc.Layer.extend({
         	anchorX: 0.5,
         	anchorY: 0.5
         });
+        
         var menu = new cc.Menu(startItem);
         menu.x = 0;
         menu.y = 0;
